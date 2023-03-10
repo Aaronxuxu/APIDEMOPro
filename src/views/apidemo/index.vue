@@ -25,9 +25,17 @@
         添加
       </el-button>
 
-      <el-button v-show="!isMobile" type="primary" icon="el-icon-download">
-        导出
-      </el-button>
+      <downloadExcel
+        header="项目数据统计"
+        :name="`各自动生成器-${Date.now()}`"
+        :fetch="downLoadDemo"
+        :fields="json_fields"
+        :footer="excelFooter"
+      >
+        <el-button v-show="!isMobile" type="primary" icon="el-icon-download">
+          导出
+        </el-button>
+      </downloadExcel>
     </div>
     <!-- 表格 -->
     <div class="ApiDemo-Main">
@@ -253,11 +261,22 @@
 </template>
 
 <script>
-import { getApiDemo, addApiDemo, editApiDemo, delApiDemo } from '@/api/apidemo'
+import JsonExcel from 'vue-json-excel'
+import {
+  getApiDemo,
+  addApiDemo,
+  editApiDemo,
+  delApiDemo,
+  downloadAPIDEMO
+} from '@/api/apidemo'
 
 import _omit from 'lodash/omit'
+import { json_fields } from './util/fiedls'
 
 export default {
+  components: {
+    downloadExcel: JsonExcel
+  },
   data() {
     return {
       dataList: [],
@@ -297,7 +316,11 @@ export default {
         id: '',
         key: '',
         value: ''
-      }
+      },
+
+      // 导出
+      json_fields: json_fields,
+      excelFooter: ''
     }
   },
   computed: {
@@ -556,6 +579,22 @@ export default {
           classify: row.classifyName
         }
       })
+    },
+
+    // 导出excel文档
+    async downLoadDemo() {
+      try {
+        const {
+          data: { list, total }
+        } = await downloadAPIDEMO()
+        this.excelFooter = `项目总数为：${total}`
+        return list
+      } catch (error) {
+        return this.$message({
+          type: 'error',
+          message: error.msg
+        })
+      }
     }
   }
 }

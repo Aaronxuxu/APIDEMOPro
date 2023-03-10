@@ -22,28 +22,39 @@ export default {
   watch: {
     option: {
       deep: true,
+      immediate: true,
       handler(val) {
-        if (val.length > 0) {
-          // console.log(val)
-          this.chart.setOption({
-            xAxis: {
-              type: 'category',
-              data: val.map((e) => e.name)
-            },
-            yAxis: {
-              type: 'value'
-            },
-            label: {
-              show: true
-            },
-            series: [
-              {
-                data: val.map((e) => e.value),
-                type: 'bar'
-              }
-            ]
-          })
-        }
+        this.$nextTick(() => {
+          if (val.length > 0) {
+            if (!this.chart) {
+              this.chart = echarts.init(this.$el)
+            }
+            this.chart.setOption({
+              xAxis: {
+                type: 'category',
+                data: val.map((e) => e.name)
+              },
+              yAxis: {
+                type: 'value'
+              },
+
+              tooltip: {
+                trigger: 'item',
+                formatter: '查询次数 <br/>{b} : {c}'
+              },
+              series: [
+                {
+                  data: val.map((e) => e.value),
+                  type: 'bar',
+                  showBackground: true,
+                  backgroundStyle: {
+                    color: 'rgba(180, 180, 180, 0.2)'
+                  }
+                }
+              ]
+            })
+          }
+        })
       }
     }
   },
@@ -53,9 +64,6 @@ export default {
     }
     this.chart.dispose()
     this.chart = null
-  },
-  mounted() {
-    this.chart = echarts.init(this.$el)
   }
 }
 </script>

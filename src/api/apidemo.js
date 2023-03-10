@@ -19,3 +19,7 @@ export const delApiDemo = (id) =>
 
 export const getAllApiDemo = () =>
   request({ url: '/admin/getAllApiDemo', method: GET })
+
+// 导出数据
+export const downloadAPIDEMO = () =>
+  request({ url: '/admin/getALLAPIDemoAndData', method: POST })

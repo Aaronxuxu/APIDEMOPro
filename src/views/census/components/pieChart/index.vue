@@ -29,33 +29,45 @@ export default {
   watch: {
     option: {
       deep: true,
+      immediate: true,
       handler(val) {
-        if (val.length > 0) {
-          this.chart.setOption({
-            legend: {
-              type: 'scroll',
-              top: 'bottom'
-            },
-            series: [
-              {
-                type: 'pie',
-                radius: ['8%', '50%'],
-                center: ['50%', '50%'],
-                roseType: 'area',
-                itemStyle: {
-                  borderRadius: 8
-                },
-                labelLine: {
-                  // show: false
-                },
-                label: {
-                  // show: false
-                },
-                data: val
-              }
-            ]
-          })
-        }
+        this.$nextTick(() => {
+          if (val.length > 0) {
+            if (!this.chart) {
+              this.chart = echarts.init(this.$el)
+            }
+            this.chart.setOption({
+              legend: {
+                type: 'scroll',
+                top: 0
+              },
+              tooltip: {
+                trigger: 'item',
+                formatter: '查询次数 <br/>{b} : {c} ({d}%)'
+              },
+              series: [
+                {
+                  type: 'pie',
+                  radius: ['5%', '50%'],
+                  center: ['50%', '50%'],
+                  roseType: 'area',
+                  itemStyle: {
+                    borderRadius: 8
+                  },
+
+                  data: val,
+                  emphasis: {
+                    itemStyle: {
+                      shadowBlur: 10,
+                      shadowOffsetX: 0,
+                      shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                  }
+                }
+              ]
+            })
+          }
+        })
       }
     }
   },
@@ -65,9 +77,6 @@ export default {
     }
     this.chart.dispose()
     this.chart = null
-  },
-  mounted() {
-    this.chart = echarts.init(this.$el)
   }
 }
 </script>

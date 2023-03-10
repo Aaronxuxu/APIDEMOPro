@@ -15,6 +15,10 @@ import { LineChart } from 'echarts/charts'
 import { UniversalTransition } from 'echarts/features'
 import { CanvasRenderer } from 'echarts/renderers'
 
+import moment from 'moment'
+
+import resize from '../mixins/resize'
+
 echarts.use([
   TitleComponent,
   ToolboxComponent,
@@ -27,90 +31,85 @@ echarts.use([
 ])
 
 export default {
+  mixins: [resize],
+  props: ['option'],
   data() {
-    return {}
+    return {
+      chart: null
+    }
   },
-  mounted() {
-    this.chart = echarts.init(this.$el)
-
-    this.chart.setOption({
-      title: {
-        text: 'Stacked Line'
-      },
-      tooltip: {
-        trigger: 'axis'
-      },
-      legend: {
-        data: ['Email', 'Union Ads', 'Video Ads', 'Direct', 'Search Engine']
-      },
-      grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-      },
-      toolbox: {
-        feature: {
-          saveAsImage: {}
-        }
-      },
-      xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          name: 'Email',
-          type: 'line',
-          stack: 'Total',
-          data: [120, 132, 101, 134, 90, 230, 210]
-        },
-        {
-          name: 'Union Ads',
-          type: 'line',
-          stack: 'Total',
-          data: [220, 182, 191, 234, 290, 330, 310]
-        },
-        {
-          name: 'Video Ads',
-          type: 'line',
-          stack: 'Total',
-          data: [150, 232, 201, 154, 190, 330, 410]
-        },
-        {
-          name: 'Direct',
-          type: 'line',
-          stack: 'Total',
-          data: [320, 332, 301, 334, 390, 330, 320]
-        },
-        {
-          name: 'Search Engine',
-          type: 'line',
-          stack: 'Total',
-          data: [820, 932, 901, 934, 1290, 1330, 1320]
-        }
-      ]
-    })
-    window.addEventListener('resize', this.chartResize)
+  computed: {
+    xArr() {
+      const arr = []
+      for (let i = 7; i >= 1; i--) {
+        arr.push(moment().subtract(i, 'day').format('YYYY-MM-DD'))
+      }
+      return arr
+    }
+  },
+  watch: {
+    option: {
+      deep: true,
+      immediate: true,
+      handler(val) {
+        this.$nextTick(() => {
+          if (val.length > 0) {
+            if (!this.chart) {
+              this.chart = echarts.init(this.$el)
+            }
+            this.chart.setOption({
+              tooltip: {
+                trigger: 'axis'
+              },
+              legend: {
+                type: 'scroll',
+                data: val.map((e) => e.name),
+                top: 'bottom'
+              },
+              grid: {
+                left: '5%',
+                right: '5%',
+                bottom: '10%',
+                containLabel: true
+              },
+              xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: this.xArr
+              },
+              yAxis: {
+                type: 'value'
+              },
+              series: val.map((e) => ({
+                name: e.name,
+                type: 'line',
+                data: e.data
+              }))
+            })
+          }
+        })
+      }
+    }
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.chartResize)
-  },
-  methods: {
-    chartResize() {
-      return this.chart.resize()
+    if (!this.chart) {
+      return
     }
-  }
+    this.chart.dispose()
+    this.chart = null
+  },
+  mounted() {}
 }
 </script>
 
 <style scope>
 .lineChart {
   width: 100%;
-  aspect-ratio: 1;
+  aspect-ratio: 1 / 1;
+}
+@media (min-width: 768px) {
+  .lineChart {
+    aspect-ratio: 3 / 1;
+  }
 }
 </style>

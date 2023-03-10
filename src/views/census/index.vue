@@ -1,16 +1,36 @@
 <template>
   <div ref="census" class="census">
     <el-row>
-      <el-col
-        :span="20"
-        :offset="2"
-        :sm="{ span: 11, offset: 0 }"
-        :lg="{ span: 7, offset: 1 }"
-      >
+      <el-col :span="24">
         <div class="census-col">
           <div class="census-header">
             <div class="census-header-title">
-              Demo浏览饼图
+              近七天内数据统计
+              <el-button
+                icon="el-icon-refresh"
+                circle
+                type="info"
+                size="small"
+                @click="getDemoDataWeekly"
+              />
+            </div>
+          </div>
+          <div v-loading="weeklyList.isLoading" class="census-main">
+            <el-empty v-if="weeklyList.dataList.length === 0">
+              <el-button type="primary" @click="getDemoDataWeekly">
+                刷新
+              </el-button>
+            </el-empty>
+
+            <lineChart v-else :option="weeklyList.dataList" />
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="24" :sm="{ span: 12, offset: 0 }" :lg="{ span: 7 }">
+        <div class="census-col">
+          <div class="census-header">
+            <div class="census-header-title">
+              Demo查询次数分布图
               <el-button
                 icon="el-icon-refresh"
                 circle
@@ -23,20 +43,24 @@
             <div class="census-header-tips">总量：{{ percentage.total }}</div>
           </div>
           <div v-loading="percentage.isLoading" class="census-main">
-            <pieChart ref="pieChart" :option="percentage.list" />
+            <el-empty v-if="percentage.list.length === 0">
+              <el-button type="primary" @click="handleReFresh('percentage')">
+                刷新
+              </el-button>
+            </el-empty>
+            <pieChart v-else :option="percentage.list" />
           </div>
         </div>
       </el-col>
       <el-col
-        :span="20"
-        :offset="2"
-        :sm="{ span: 11, offset: 2 }"
-        :lg="{ span: 7, offset: 1 }"
+        :span="24"
+        :sm="{ span: 11, offset: 1 }"
+        :lg="{ span: 8, offset: 1 }"
       >
         <div class="census-col">
           <div class="census-header">
             <div class="census-header-title">
-              Demo浏览柱状图
+              Demo查询次数柱状图
               <el-button
                 icon="el-icon-refresh"
                 circle
@@ -49,14 +73,18 @@
             <div class="census-header-tips">总量：{{ percentage.total }}</div>
           </div>
           <div v-loading="percentage.isLoading" class="census-main">
-            <columChart ref="pieChart" :option="percentage.list" />
+            <el-empty v-if="percentage.list.length === 0">
+              <el-button type="primary" @click="handleReFresh('percentage')">
+                刷新
+              </el-button>
+            </el-empty>
+            <columChart v-else :option="percentage.list" />
           </div>
         </div>
       </el-col>
       <el-col
-        :span="20"
-        :offset="2"
-        :sm="{ span: 11, offset: 0 }"
+        :span="24"
+        :sm="{ span: 13, offset: 0 }"
         :lg="{ span: 7, offset: 1 }"
       >
         <div class="census-col">
@@ -123,7 +151,11 @@
 </template>
 
 <script>
-import { getIndexPageData, reFreshData } from '@/api/census'
+import {
+  getIndexPageData,
+  reFreshData,
+  getDemoDataByWeekly
+} from '@/api/census'
 import pieChart from './components/pieChart'
 import columChart from './components/columChart'
 import lineChart from './components/lineChart'
@@ -152,6 +184,10 @@ export default {
           { label: '一天内', value: 'day' },
           { label: '一周内', value: 'weekly' }
         ]
+      },
+      weeklyList: {
+        isLoading: true,
+        dataList: []
       }
     }
   },
@@ -163,8 +199,28 @@ export default {
 
   mounted() {
     this.getDataLists()
+    this.getDemoDataWeekly()
   },
   methods: {
+    // 获取七天
+    async getDemoDataWeekly() {
+      this.weeklyList = { ...this.weeklyList, isLoading: true }
+      try {
+        const { data } = await getDemoDataByWeekly()
+        return (this.weeklyList = {
+          ...this.weeklyList,
+          dataList: data,
+          isLoading: false
+        })
+      } catch (error) {
+        this.$message({
+          type: 'error',
+          message: error.msg
+        })
+      }
+      this.weeklyList = { ...this.weeklyList, isLoading: false }
+    },
+
     async getDataLists() {
       try {
         const { hourSort, percentage } = await getIndexPageData()
