@@ -1,10 +1,18 @@
 import { login, logout } from '@/api/user'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import {
+  getToken,
+  setToken,
+  removeToken,
+  getRoot,
+  setRoot,
+  removeRoot
+} from '@/utils/auth'
 import { resetRouter } from '@/router'
 
 const getDefaultState = () => {
   return {
     token: getToken(),
+    isRoot: getRoot(),
     name: '',
     avatar: ''
   }
@@ -24,6 +32,9 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ROOT: (state, root) => {
+    state.isRoot = root
   }
 }
 
@@ -32,9 +43,13 @@ const actions = {
   login({ commit }, userInfo) {
     return new Promise(async (resolve, reject) => {
       try {
-        const { data } = await login(userInfo)
-        commit('SET_TOKEN', data.token)
-        setToken(data.token, data.expireTime)
+        const {
+          data: { token, isRoot, expireTime }
+        } = await login(userInfo)
+        commit('SET_TOKEN', token)
+        commit('SET_ROOT', isRoot ? 1 : 0)
+        setRoot(isRoot ? 1 : 0, expireTime)
+        setToken(token, expireTime)
         return resolve('ok')
       } catch (error) {
         return reject(error)
@@ -46,6 +61,7 @@ const actions = {
     try {
       await logout()
       removeToken()
+      removeRoot()
       commit('RESET_STATE')
       return Promise.resolve('ok')
     } catch (error) {

@@ -14,7 +14,6 @@ const service = axios.create({
 service.interceptors.request.use(
   (config) => {
     const { url } = config
-
     // do something before request is sent
     if (url.includes(ADMINURL)) {
       // let each request carry token

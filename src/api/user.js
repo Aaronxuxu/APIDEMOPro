@@ -22,3 +22,9 @@ export function logout() {
     method: 'post'
   })
 }
+
+export const refreshToken = () =>
+  request({
+    url: '/admin/refreshToken',
+    method: 'post'
+  })

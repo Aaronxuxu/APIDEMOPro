@@ -18,6 +18,7 @@
       </el-button>
 
       <el-button
+        v-show="isRoot"
         type="primary"
         icon="el-icon-plus"
         @click="dialogVisible = true"
@@ -120,6 +121,7 @@
                 {{ scope.row.showOrHide ? '已上线' : '未上线' }}
               </el-tag>
               <el-tooltip
+                v-show="isRoot"
                 class="item"
                 effect="dark"
                 content="修改上线状态"
@@ -273,6 +275,8 @@ import {
 import _omit from 'lodash/omit'
 import { json_fields } from './util/fiedls'
 
+import { mapState } from 'vuex'
+
 export default {
   components: {
     downloadExcel: JsonExcel
@@ -326,6 +330,9 @@ export default {
   computed: {
     isMobile() {
       return this.$store.getters.isMobile
+    },
+    isRoot() {
+      return Number(this.$store.getters.isRoot) === 1 ? true : false
     }
   },
   watch: {
